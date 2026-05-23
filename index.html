@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Consulta de Países</title>
+</head>
+<body>
+    <main>
+        <h1>🌍 Consulta de Países</h1>
+        <p class="subtitle">Digite o nome do país e veja os dados retornados pela API.</p>
+
+        <div class="search-container">
+            <input type="text" id="inputPais" placeholder="Digite o nome do país">
+            <button id="btnBuscar">Consultar</button>
+        </div>
+
+        <p id="loading" style="display: none;">⏳ Carregando...</p>
+        <p id="erro" style="display:none"></p>
+
+    <div id="resultado" style="display: none;">
+        <img id="bandeira" alt="Bandeira do país" class="flag">
+        <h2 id="nome"></h2>
+        <p><strong>Capital:</strong> <span id="capital"></span></p>
+        <p><strong>População:</strong> <span id="populacao"></span></p>
+        <p><strong>Região:</strong> <span id="regiao"></span></p>
+        <p><strong>Moeda:</strong> <span id="moeda"></span></p>
+        <p><strong>Idioma:</strong> <span id="idioma"></span></p>
+    </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
