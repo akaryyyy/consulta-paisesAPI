@@ -1,34 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <title>Consulta de Países</title>
+    <title>Sistema de Denúncia</title>
 </head>
 <body>
-    <main>
-        <h1>🌍 Consulta de Países</h1>
-        <p class="subtitle">Digite o nome do país e veja os dados retornados pela API.</p>
+    <!-- Tela de Registro -->
+    <div id="telaRegistro" class="tela">
+        <main class="container">
+            <h1>🚨 Sistema de Denúncia</h1>
+            <p class="subtitle">Registre seus dados para acessar o sistema</p>
 
-        <div class="search-container">
-            <input type="text" id="inputPais" placeholder="Digite o nome do país">
-            <button id="btnBuscar">Consultar</button>
-        </div>
+            <form id="formularioRegistro" class="form">
+                <div class="form-group">
+                    <label for="nome">Nome Completo:</label>
+                    <input 
+                        type="text" 
+                        id="nome" 
+                        placeholder="Digite seu nome completo" 
+                        required
+                    >
+                </div>
 
-        <p id="loading" style="display: none;">⏳ Carregando...</p>
-        <p id="erro" style="display:none"></p>
+                <div class="form-group">
+                    <label for="cpf">CPF:</label>
+                    <input 
+                        type="text" 
+                        id="cpf" 
+                        placeholder="000.000.000-00" 
+                        maxlength="14"
+                        required
+                    >
+                </div>
 
-    <div id="resultado" style="display: none;">
-        <img id="bandeira" alt="Bandeira do país" class="flag">
-        <h2 id="nome"></h2>
-        <p><strong>Capital:</strong> <span id="capital"></span></p>
-        <p><strong>População:</strong> <span id="populacao"></span></p>
-        <p><strong>Região:</strong> <span id="regiao"></span></p>
-        <p><strong>Moeda:</strong> <span id="moeda"></span></p>
-        <p><strong>Idioma:</strong> <span id="idioma"></span></p>
+                <div class="form-group checkbox">
+                    <input 
+                        type="checkbox" 
+                        id="localizacao" 
+                    >
+                    <label for="localizacao">Permitir acesso à localização</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Registrar</button>
+            </form>
+        </main>
     </div>
-    </main>
+
+    <!-- Tela SOS -->
+    <div id="telaSOS" class="tela" style="display: none;">
+        <main class="container sos-container">
+            <h1>🚨 BOTÃO SOS</h1>
+            <p class="subtitle">Clique no botão abaixo para enviar uma denúncia</p>
+
+            <div class="usuario-info">
+                <p><strong>Usuário:</strong> <span id="usuarioNome"></span></p>
+            </div>
+
+            <button id="btnSOS" class="btn btn-sos">SOS</button>
+
+            <div id="mensagemDenuncia" class="mensagem-denuncia" style="display: none;">
+                <p>✅ Denúncia enviada com sucesso!</p>
+            </div>
+
+            <button id="btnSair" class="btn btn-secondary">Sair</button>
+        </main>
+    </div>
 
     <script src="script.js"></script>
 </body>

@@ -1,54 +1,172 @@
-const botaoConsultar = document.getElementById('btnBuscar');
+// Elementos do DOM
+const telaRegistro = document.getElementById('telaRegistro');
+const telaSOS = document.getElementById('telaSOS');
+const formularioRegistro = document.getElementById('formularioRegistro');
+const inputNome = document.getElementById('nome');
+const inputCPF = document.getElementById('cpf');
+const checkboxLocalizacao = document.getElementById('localizacao');
+const btnSOS = document.getElementById('btnSOS');
+const btnSair = document.getElementById('btnSair');
+const mensagemDenuncia = document.getElementById('mensagemDenuncia');
+const usuarioNome = document.getElementById('usuarioNome');
 
-async function consultarPais() {
-  const nomePais = document.getElementById('inputPais').value.trim();
-  const tagLoading = document.getElementById('loading');
-  const tagErro = document.getElementById('erro');
-  const tagResultado = document.getElementById('resultado');
+// Dados do usuário
+let usuarioAtual = null;
+let localizacaoPermitida = false;
+let localizacaoAtual = null;
 
-  tagLoading.style.display = 'none';
-  tagErro.style.display = 'none';
-  tagResultado.style.display = 'none';
-
-  if (!nomePais) {
-    tagErro.textContent = 'Digite o nome de um país.';
-    tagErro.style.display = 'block';
-    return;
-  }
-
-  tagLoading.style.display = 'block';
-
-  try {
-    const respostaApi = await fetch(`https://restcountries.com/v3.1/name/${nomePais}`);
-    if (!respostaApi.ok) throw new Error('País não encontrado.');
-
-    const informacoes = await respostaApi.json();
-    const pais = informacoes[0];
-
-    document.getElementById('bandeira').src = pais.flags.png;
-    document.getElementById('nome').textContent = pais.name.common;
-    document.getElementById('capital').textContent = pais.capital?.[0] || '—';
-    document.getElementById('populacao').textContent = pais.population.toLocaleString('pt-BR');
-    document.getElementById('regiao').textContent = pais.region;
-
-    const moeda = Object.values(pais.currencies || {})[0];
-    document.getElementById('moeda').textContent = moeda ? `${moeda.name} (${moeda.symbol})` : '—';
-
-    const idioma = Object.values(pais.languages || {})[0];
-    document.getElementById('idioma').textContent = idioma || '—';
-
-    tagLoading.style.display = 'none';
-    tagResultado.style.display = 'block';
-  } catch (erro) {
-    tagLoading.style.display = 'none';
-    tagErro.textContent = '❌ ' + erro.message;
-    tagErro.style.display = 'block';
-  }
+// Máscara para CPF
+function formatarCPF(cpf) {
+    cpf = cpf.replace(/\D/g, '');
+    if (cpf.length > 11) cpf = cpf.slice(0, 11);
+    
+    if (cpf.length <= 3) return cpf;
+    if (cpf.length <= 6) return cpf.slice(0, 3) + '.' + cpf.slice(3);
+    if (cpf.length <= 9) return cpf.slice(0, 3) + '.' + cpf.slice(3, 6) + '.' + cpf.slice(6);
+    return cpf.slice(0, 3) + '.' + cpf.slice(3, 6) + '.' + cpf.slice(6, 9) + '-' + cpf.slice(9);
 }
 
-document.getElementById('inputPais').addEventListener('keydown', function (e) {
-  if (e.key === 'Enter') consultarPais();
+// Validar CPF
+function validarCPF(cpf) {
+    cpf = cpf.replace(/\D/g, '');
+    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+    
+    let soma = 0;
+    let resto;
+    
+    for (let i = 1; i <= 9; i++) {
+        soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+    }
+    
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(cpf.substring(9, 10))) return false;
+    
+    soma = 0;
+    for (let i = 1; i <= 10; i++) {
+        soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+    }
+    
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(cpf.substring(10, 11))) return false;
+    
+    return true;
+}
+
+// Solicitar localização
+function solicitarLocalizacao() {
+    if (checkboxLocalizacao.checked) {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    localizacaoAtual = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+                    console.log('Localização obtida:', localizacaoAtual);
+                },
+                function(error) {
+                    console.error('Erro ao obter localização:', error);
+                }
+            );
+        }
+    }
+}
+
+// Lidar com evento de entrada do CPF
+inputCPF.addEventListener('input', (e) => {
+    e.target.value = formatarCPF(e.target.value);
 });
 
-botaoConsultar.addEventListener('click', consultarPais);
+// Registrar usuário
+formularioRegistro.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const nome = inputNome.value.trim();
+    const cpf = inputCPF.value;
+    
+    // Validações
+    if (!nome) {
+        alert('Por favor, digite seu nome completo.');
+        return;
+    }
+    
+    if (!validarCPF(cpf)) {
+        alert('CPF inválido. Verifique o número digitado.');
+        return;
+    }
+    
+    // Solicitar localização se permitido
+    solicitarLocalizacao();
+    
+    // Armazenar dados do usuário
+    usuarioAtual = {
+        nome: nome,
+        cpf: cpf,
+        localizacao: localizacaoAtual,
+        dataCadastro: new Date().toISOString()
+    };
+    
+    // Exibir nome na tela SOS
+    usuarioNome.textContent = nome;
+    
+    // Ir para tela SOS
+    telaRegistro.style.display = 'none';
+    telaSOS.style.display = 'flex';
+    
+    console.log('Usuário registrado:', usuarioAtual);
+});
+
+// Enviar denúncia
+function enviarDenuncia() {
+    if (!usuarioAtual) return;
+    
+    const denunciaData = {
+        usuario: usuarioAtual.nome,
+        cpf: usuarioAtual.cpf,
+        localizacao: usuarioAtual.localizacao,
+        dataRegistro: usuarioAtual.dataCadastro,
+        dataDenuncia: new Date().toISOString(),
+        tipo: 'SOS'
+    };
+    
+    // Simular envio de dados (em um projeto real, seria enviado para um servidor)
+    console.log('Denúncia enviada:', denunciaData);
+    
+    // Armazenar no localStorage para persistência
+    let denuncias = JSON.parse(localStorage.getItem('denuncias')) || [];
+    denuncias.push(denunciaData);
+    localStorage.setItem('denuncias', JSON.stringify(denuncias));
+    
+    // Mostrar mensagem de sucesso
+    mensagemDenuncia.style.display = 'block';
+    
+    // Desabilitar botão por 2 segundos
+    btnSOS.disabled = true;
+    btnSOS.style.opacity = '0.5';
+    
+    setTimeout(() => {
+        mensagemDenuncia.style.display = 'none';
+        btnSOS.disabled = false;
+        btnSOS.style.opacity = '1';
+    }, 2000);
+}
+
+// Evento do botão SOS
+btnSOS.addEventListener('click', enviarDenuncia);
+
+// Sair do sistema
+btnSair.addEventListener('click', () => {
+    usuarioAtual = null;
+    localizacaoAtual = null;
+    
+    // Limpar formulário
+    formularioRegistro.reset();
+    mensagemDenuncia.style.display = 'none';
+    
+    // Voltar para tela de registro
+    telaSOS.style.display = 'none';
+    telaRegistro.style.display = 'flex';
+});
  
